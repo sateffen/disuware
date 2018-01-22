@@ -1,0 +1,15 @@
+{
+  "type": "object",
+  "properties": {
+    "packageDir": {
+      "type": "string"
+    },
+    "clusterMode": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 64
+    }
+  },
+  "required": ["packageDir"],
+  "additionalProperties": false
+}

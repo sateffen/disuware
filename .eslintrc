@@ -1,0 +1,11 @@
+{
+  "env": {
+    "node": true,
+    "es6": true
+  },
+  "extends": ["eslint:recommended", "google"],
+  "rules": {
+    "max-len": "off",
+    "brace-style": ["error", "stroustrup"]
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "type": "object",
+  "properties": {
+    "interface": {
+      "type": "string",
+      "minLength": 1
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "requires": {
+      "type": "object",
+      "patternProperties": {
+        "": {
+          "type": "string",
+          "pattern": "^[~^]{0,1}\\d+\\.\\d+\\.\\d+$"
+        }
+      }
+    }
+  },
+  "required": ["interface", "version"],
+  "additionalProperties": true
+}
