@@ -1,7 +1,7 @@
 {
-  "name": "anyware",
+  "name": "disuware",
   "version": "0.0.0",
-  "description": "Application initialization like a boss!",
+  "description": "Dependency injecting start up 'ware",
   "dependencies": {
     "ajv": "~6.0.1",
     "commander": "~2.13.0",

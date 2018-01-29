@@ -1,4 +1,4 @@
-const debug = require('debug')('anyware:main');
+const debug = require('debug')('disuware:main');
 const commander = require('commander');
 const pkg = require('../package.json');
 
@@ -20,14 +20,14 @@ commander
     .parse(process.argv);
 
 debug('Finished parsing process arguments');
-debug('Start executing anyware');
+debug('Start executing disuware');
 
 config.execute(commander.config)
     .then(cluster.execute)
     .then(loader.execute)
     .then(linker.execute)
     .then(executor.execute)
-    .then(() => debug('Finished executing anyware, everything should be up and running'))
+    .then(() => debug('Finished executing disuware, everything should be up and running'))
     .catch((aPotentialError) => {
         if (aPotentialError !== null) {
             // eslint-disable-next-line no-console

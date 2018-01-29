@@ -19,19 +19,19 @@ class Package {
         this.resolvedPath = null;
 
         /**
-         * The implemented interface of this package, based on the anywarepackage.json
+         * The implemented interface of this package, based on the disuwarepackage.json
          * @type {string|null}
          */
         this.interface = null;
 
         /**
-         * The version of this package, based on the anywarepackage.json
+         * The version of this package, based on the disuwarepackage.json
          * @type {string|null}
          */
         this.version = null;
 
         /**
-         * The required interfaces of this package, based on the anywarepackage.json
+         * The required interfaces of this package, based on the disuwarepackage.json
          * @type {Object|null}
          */
         this.requires = null;

@@ -1,4 +1,4 @@
-const debug = require('debug')('anyware:cluster');
+const debug = require('debug')('disuware:cluster');
 const os = require('os');
 const cluster = require('cluster');
 

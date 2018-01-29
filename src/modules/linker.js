@@ -1,4 +1,4 @@
-const debug = require('debug')('anyware:linker');
+const debug = require('debug')('disuware:linker');
 const semver = require('semver');
 
 /**
@@ -20,20 +20,20 @@ function sortByInterface(a, b) {
  * The linker reads the list of packages, that was loaded by the loader, and sorts them for the executor.
  * It'll sort the list of package descriptors in a way, that each following package requirements can be
  * fullfilled by the previously initialized packages
- * @param {Package[]} aAnywarePackageDescriptorList A list of loaded packages, that should get linked
+ * @param {Package[]} aDisuwarePackageDescriptorList A list of loaded packages, that should get linked
  * @return {Promise.<Package[]>} Resolves with a list of ordered packages
  */
-function execute(aAnywarePackageDescriptorList) {
+function execute(aDisuwarePackageDescriptorList) {
     debug('Starting linker to determine the initialization list');
 
     // first setup the linked elements list and cache
     // the linkedElementsCache looks like {interfaceName1: ['version1', 'version2'], interfaceName2: ['version1']}
     const linkedElementsCache = {};
     const listOfLinkedElements = [];
-    // then prepare the iterator lists. The anyware package descriptor list has to be sorted by the interface name,
+    // then prepare the iterator lists. The disuware package descriptor list has to be sorted by the interface name,
     // so the interfaces itself will get initialized as group (if possible) as well. That way we can link the newest
     // package of each requirement later while initializing
-    let listOfItemsToLink = aAnywarePackageDescriptorList.sort(sortByInterface);
+    let listOfItemsToLink = aDisuwarePackageDescriptorList.sort(sortByInterface);
     let nextListOfItemsToLink = [];
 
     // and the flag for stuck linking. This flag is set to false for each iteration. If it's not set to true for an iteration

@@ -1,4 +1,4 @@
-const debug = require('debug')('anyware:executor');
+const debug = require('debug')('disuware:executor');
 const NodeModule = require('module');
 const semver = require('semver');
 
@@ -14,8 +14,8 @@ const pkgRequirementsResolveMap = {};
 // here we apply a proxy to the require function, which traps the require call and alters the arguments if needed
 NodeModule.prototype.require = new Proxy(NodeModule.prototype.require, {
     apply(aTarget, aThisContext, aArgumentsList) {
-        // if the module name starts with "anyware!" it might be a package we can resolve
-        if (aArgumentsList[0].indexOf('anyware!') === 0) {
+        // if the module name starts with "disuware!" it might be a package we can resolve
+        if (aArgumentsList[0].indexOf('disuware!') === 0) {
             debug(`Searching for the correct context for module with id "${aThisContext.id}"`);
             // so first find the correct context for this require
             let contextModule = aThisContext;
@@ -71,7 +71,7 @@ function mGetRequirementsLinkMap(aRequirementResolveMap, aRequirements) {
         const fittingPkg = aRequirementResolveMap[neededInterface]
             .find((aDescription) => semver.satisfies(aDescription.version, neededVersion));
 
-        linkMap['anyware!' + neededInterface] = fittingPkg.resolvedPath;
+        linkMap['disuware!' + neededInterface] = fittingPkg.resolvedPath;
     }
 
     return linkMap;
@@ -84,7 +84,7 @@ function mGetRequirementsLinkMap(aRequirementResolveMap, aRequirements) {
  * @return {Promise.<undefined>} A promise telling about the success (or fail) of initialization
  */
 function execute(aPackageList) {
-    debug('Start executing all anyware packages');
+    debug('Start executing all disuware packages');
 
     // first we setup a promise pointer, that'll point to the next promise we can use for building our chain
     let promisePointer = Promise.resolve();
@@ -122,12 +122,12 @@ function execute(aPackageList) {
                 pkgInterfaceResolveCache[pkgToInit.interface] = [pkgToInit];
             }
 
-            // if there is an anywareInit function in the package, we call it
-            if (typeof pkgModule.exports.__anywareInit === 'function') {
-                debug(`Package with interface ${pkgToInit.interface}@${pkgToInit.version} has an __anywareInit method, so call it`);
+            // if there is an disuware function in the package, we call it
+            if (typeof pkgModule.exports.__disuwareInit === 'function') {
+                debug(`Package with interface ${pkgToInit.interface}@${pkgToInit.version} has an __disuwareInit method, so call it`);
 
-                // and then call __anywareInit
-                return pkgModule.exports.__anywareInit(generalConfig);
+                // and then call __disuwareInit
+                return pkgModule.exports.__disuwareInit(generalConfig);
             }
 
             return null;

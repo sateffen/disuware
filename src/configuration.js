@@ -1,7 +1,7 @@
-const debug = require('debug')('anyware:configuration');
+const debug = require('debug')('disuware:configuration');
 const path = require('path');
 const fs = require('fs');
-const anywareConfigSchema = require('./schemas/anywareconfig.json');
+const disuwareConfigSchema = require('./schemas/disuwareconfig.json');
 const Ajv = require('ajv');
 const ajv = new Ajv();
 
@@ -29,10 +29,10 @@ function execute(aConfigFile) {
     debug('Finished loading configuration');
     debug('Start validating the configuration');
 
-    const valid = ajv.validate(anywareConfigSchema, configPointer);
+    const valid = ajv.validate(disuwareConfigSchema, configPointer);
 
     if (!valid) {
-        throw new Error(`Anyware configuration is invalid: ${ajv.errorsText()}`);
+        throw new Error(`Disuware configuration is invalid: ${ajv.errorsText()}`);
     }
 
     debug('Finished validating the configuration, looks alright');
