@@ -1,8 +1,8 @@
-const debug = require('debug')('disuware:executor');
+const debug = require('debug')('disuware:modules:executor');
 const NodeModule = require('module');
 const semver = require('semver');
 
-const config = require('../configuration');
+const config = require('./configuration');
 
 /**
  * This is a map of node module-ids with their corresponding maps, where required interfaces are mapped

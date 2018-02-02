@@ -2,6 +2,7 @@
   "name": "disuware",
   "version": "0.0.0",
   "description": "Dependency injecting start up 'ware",
+  "bin": "./src/bin/disuware.js",
   "dependencies": {
     "ajv": "~6.0.1",
     "commander": "~2.13.0",

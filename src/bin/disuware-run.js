@@ -1,28 +1,29 @@
-const debug = require('debug')('disuware:main');
+#!/usr/bin/env node
+const debug = require('debug')('disuware:bin:run');
 const commander = require('commander');
-const pkg = require('../package.json');
 
 debug('Start loading moduls');
 
-const config = require('./configuration');
-const cluster = require('./modules/cluster');
-const loader = require('./modules/loader');
-const linker = require('./modules/linker');
-const executor = require('./modules/executor');
+const config = require('../modules/configuration');
+const cluster = require('../modules/cluster');
+const loader = require('../modules/loader');
+const linker = require('../modules/linker');
+const executor = require('../modules/executor');
 
 debug('Finished loading moduls');
 debug('Start parsing process arguments');
 
 commander
-    .version(pkg.version)
-    .description(pkg.description)
-    .option('-c, --config <file>', 'The config file to use')
     .parse(process.argv);
 
 debug('Finished parsing process arguments');
 debug('Start executing disuware');
 
-config.execute(commander.config)
+if (typeof commander.args[0] !== 'string') {
+    throw new Error('disuware run needs a configuration file to run');
+}
+
+config.execute(commander.args[0])
     .then(cluster.execute)
     .then(loader.execute)
     .then(linker.execute)

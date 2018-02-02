@@ -1,7 +1,7 @@
-const debug = require('debug')('disuware:configuration');
+const debug = require('debug')('disuware:modules:configuration');
 const path = require('path');
 const fs = require('fs');
-const disuwareConfigSchema = require('./schemas/disuwareconfig.json');
+const disuwareConfigSchema = require('../schemas/disuwareconfig.json');
 const Ajv = require('ajv');
 const ajv = new Ajv();
 

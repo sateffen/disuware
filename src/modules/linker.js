@@ -1,4 +1,4 @@
-const debug = require('debug')('disuware:linker');
+const debug = require('debug')('disuware:modules:linker');
 const semver = require('semver');
 
 /**

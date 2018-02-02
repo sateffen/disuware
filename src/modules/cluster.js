@@ -1,8 +1,8 @@
-const debug = require('debug')('disuware:cluster');
+const debug = require('debug')('disuware:modules:cluster');
 const os = require('os');
 const cluster = require('cluster');
 
-const config = require('../configuration');
+const config = require('./configuration');
 
 /**
  * Sets up a cluster of processes if configured

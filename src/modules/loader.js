@@ -1,4 +1,4 @@
-const debug = require('debug')('disuware:loader');
+const debug = require('debug')('disuware:modules:loader');
 const pify = require('pify');
 const fs = pify(require('fs'));
 const path = require('path');
@@ -6,7 +6,7 @@ const disuwarePackageSchema = require('../schemas/disuwarepackage.json');
 const Ajv = require('ajv');
 const ajv = new Ajv();
 
-const config = require('../configuration');
+const config = require('./configuration');
 const Package = require('../models/package');
 
 /**
