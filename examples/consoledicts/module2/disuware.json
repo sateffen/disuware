@@ -1,0 +1,7 @@
+{
+    "interface": "module2",
+    "version": "1.0.0",
+    "requires": {
+        "dict": "~2.0.0"
+    }
+}
