@@ -4,24 +4,18 @@
 
 Application initialization like a boss!
 
-Todo:
-
-* Implement a way for configuration distribution
-* Write unittests
-* Write documentation
-
 ## What does it do (short story)
 
 In short, disuware is a CLI tool for starting nodejs applications, which are built
-by composing services. Disuware will provide a dependency injection system on top of
-the nodejs native module loading to enable you composing your services, as well as
-load the services itself in an order, that they work well.
+by composing modules. Disuware will provide a dependency injection system on top of
+the nodejs native module loading to enable you composing your modules, as well as
+load the modules itself in an order, that they work well.
 
 ## What does it do exactly (long story)
 
 Disuware is configured by a config file. The config file contains a *packageDir*,
 which describes a directory with subdirectories. Each subdirectory represents
-a package, providing a service and implements a specific interface in a specific
+a package, providing a module and implements a specific interface in a specific
 version.
 
 So each subdirectory contains a file called *disuwarepackage.json* which describes
@@ -41,20 +35,20 @@ So an example *disuwarepackage.json* file looks like:
 }
 ```
 
-Disuware will load all descriptions of services available, and creates an ordered list
+Disuware will load all descriptions of modules available, and creates an ordered list
 of this packages, telling in which order the packages have to be initialized to work
 with each other. So in this example the list would look like `['database', 'authentication']`.
 
-Now the executor will load each of these services as node modules in the determined
+Now the executor will load each of these modules as node modules in the determined
 order, and calls `__disuwareInit` on these modules, if this function is exported.
 
-That way your services will get initialized in the correct order.
+That way your modules will get initialized in the correct order.
 
 **But wait, there's more:**
 
 Up till now this is not that awesome, but there is a big special bonus:
 
-Your services implement interfaces, which are different than the package names. That way
+Your modules implement interfaces, which are different than the package names. That way
 you can define an interface called "*authentication*" for your projects, looking like:
 
 ```js
@@ -72,28 +66,28 @@ But one point is great: The API (the interface) is the same.
 
 Here comes disuware, allowing you to call `require('disuware!authentication')`, which
 resolves to a package implementing the *authentication* interface and providing it as
-a service. That way you can download a different node-package (*authenticate-ldap*
-instead of *authenticate-local*), but all other packages using this service don't have
+a module. That way you can download a different node-package (*authenticate-ldap*
+instead of *authenticate-local*), but all other packages using this module don't have
 to be changed to work with it.
 
 That way you can define an interface, which your applications use, but have different
 implementations for different usecases - without losing compatibility with all your
-other services.
+other modules.
 
 **Pretty neat, but there is more:**
 
 It's great to differenciate between interface and package-name, so it's far simpler
-to generate reuse. But sometimes you define a new interface for your services (like
+to generate reuse. But sometimes you define a new interface for your modules (like
 *database* in version *2.0.0*), which has breaking changes. Now you have to change
 all other packages at once to get it working... or do you? Well, disuware makes a
 difference between *database@1.0.0* and *database@2.0.0*. In fact even*database@1.0.1*
 is different than the others, sooo disuware will load and initialize all this different
-services. Now some services require a service implementing *database@^1.0.0*, but
-newer services require a service implementing *database@^2.0.0*. Disuware loaded and
-initialized both, and will link the right one to your service. So your service still
-calls `require('disuware!database')`, but because disuware knows about which services
-needs which version of which interface, it'll pass back the correct fitting service.
-(So for some services `require('disuware!database')` will resolve to the service
-implementing *database@2.0.0* while others will resolve to the service implementing
+modules. Now some modules require a module implementing *database@^1.0.0*, but
+newer modules require a module implementing *database@^2.0.0*. Disuware loaded and
+initialized both, and will link the right one to your module. So your module still
+calls `require('disuware!database')`, but because disuware knows about which modules
+needs which version of which interface, it'll pass back the correct fitting module.
+(So for some modules `require('disuware!database')` will resolve to the module
+implementing *database@2.0.0* while others will resolve to the module implementing
 *database@1.0.0*)
 
