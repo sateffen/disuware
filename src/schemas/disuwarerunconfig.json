@@ -1,15 +1,30 @@
 {
   "type": "object",
   "properties": {
-    "packageDir": {
-      "type": "string"
+    "moduleDirs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
     },
-    "clusterMode": {
-      "type": "integer",
-      "minimum": 0,
-      "maximum": 64
+    "cluster": {
+      "type": "object",
+      "properties": {
+        "mode": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 64
+        }
+      },
+      "required": [
+        "mode"
+      ]
     }
   },
-  "required": ["packageDir"],
+  "required": [
+    "moduleDirs"
+  ],
   "additionalProperties": false
 }

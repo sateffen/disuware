@@ -19,6 +19,9 @@
       }
     }
   },
-  "required": ["interface", "version"],
+  "required": [
+    "interface",
+    "version"
+  ],
   "additionalProperties": true
 }

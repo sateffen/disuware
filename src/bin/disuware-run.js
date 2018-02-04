@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 const debug = require('debug')('disuware:bin:run');
 const commander = require('commander');
+const disuwareRunConfigSchema = require('../schemas/disuwarerunconfig');
 
 debug('Start loading moduls');
 
@@ -23,7 +24,7 @@ if (typeof commander.args[0] !== 'string') {
     throw new Error('disuware run needs a configuration file to run');
 }
 
-config.execute(commander.args[0])
+config.execute(commander.args[0], disuwareRunConfigSchema)
     .then(cluster.execute)
     .then(loader.execute)
     .then(linker.execute)

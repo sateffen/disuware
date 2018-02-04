@@ -1,67 +1,72 @@
 const debug = require('debug')('disuware:modules:loader');
-const pify = require('pify');
-const fs = pify(require('fs'));
+const util = require('util');
+const fs = require('fs');
 const path = require('path');
 const disuwareJsonSchema = require('../schemas/disuwarejson.json');
 const Ajv = require('ajv');
 const ajv = new Ajv();
 
 const config = require('./configuration');
-const Package = require('../models/package');
+const DisuwareModule = require('../models/disuwaremodule');
 
 /**
- * Maps given files in the path to array representing the path and file stats
- * @param {string[]} aDirContent A list of content
- * @return {Promise.<Array[]>} Array of elements looking like [path, stats] for each file in packageDir
+ * Generates a modules stats list, based on moduleDirs
+ * @return {Promise.<Array[]>} Array of elements looking like [path, stats] for each file in moduleDirs
  */
-function mMapDirContentToStatList(aDirContent) {
-    debug('Start stating all files in the package dir');
-    const packageDir = config.getKey('packageDir');
+function mGenerateModulesStatList() {
+    debug('Started generating module dirs stats lists');
+    const moduleDirs = config
+        .getKey('moduleDirs')
+        .map(config.resolveByConfigFilePath);
 
-    const promiseList = aDirContent
-        .map((aPath) => path.join(packageDir, aPath))
-        .map((aPath) => fs.stat(aPath).then((aStat) => [aPath, aStat]));
+    return Promise
+        .all(moduleDirs.map((aDir) => util.promisify(fs.readdir)(aDir)))
+        .then((aDirContents) => aDirContents
+            .map((aDirContent, aIndex) => aDirContent
+                .map((aPath) => path.join(moduleDirs[aIndex], aPath))
+                .map((aPath) => util.promisify(fs.stat)(aPath).then((aStat) => [aPath, aStat])))
+        )
+        // flatten the arrays and wait till all are resolved
+        .then((aStatPromises) => Promise.all(Array.prototype.concat.apply([], aStatPromises)))
+        .then((aStatListsArray) => {
+            debug(`Finished stating all files in module dirs, found ${aStatListsArray.length} files/dirs`);
 
-    return Promise.all(promiseList)
-        .then((aStatList) => {
-            debug(`Finished stating all files in the package dir, found ${promiseList.length}`);
-
-            return aStatList;
+            return aStatListsArray;
         });
 }
 
 /**
- * Maps given stat descriptors to the disuware package description files
- * @param {Array[]} aStatDescriptors Array of elements looking like [path, stats] for each file in packageDir
- * @return {Promise.<Array[]>} Array of elements looking like [path, disuwareJsonContent] for each file in packageDir
+ * Maps given stat descriptors to the disuware module description files
+ * @param {Array[]} aStatDescriptors Array of elements looking like [path, stats] for each file in moduleDirs
+ * @return {Promise.<Array[]>} Array of elements looking like [path, disuwareJsonContent] for each file in moduleDirs
  */
-function mMapStatListToActualDisuwareJsonFile(aStatDescriptors) {
+function mMapStatListToActualDisuwareJsonFiles(aStatDescriptors) {
     debug('Start mapping the stat-list to actual disuware.json files');
 
     // first filter all non directories, and generate a list of promises checking the access on the disuware.json
     // inside the directories
     const promiseList = aStatDescriptors
-        // first filter all non directories
+    // first filter all non directories
         .filter((aDescriptor) => aDescriptor[1].isDirectory())
-        // then check if each of the packages has an disuware.json file. If it has, we generate a descriptor
+        // then check if each of the module has an disuware.json file. If it has, we generate a descriptor
         // array consisting of the path and the disuware.json contents. Else we log a warning
         .map((aDescriptor) => {
-            const packageFile = path.join(aDescriptor[0], './disuware.json');
+            const moduleFile = path.join(aDescriptor[0], './disuware.json');
 
-            return fs.access(packageFile, fs.constants.R_OK)
-                .then(() => [packageFile, aDescriptor[0]])
+            return util.promisify(fs.access)(moduleFile, fs.constants.R_OK)
+                .then(() => [moduleFile, aDescriptor[0]])
                 .catch(() => null);
         });
 
     // then wait for the directory disuware.json checks
     return Promise.all(promiseList)
-        // then filter out all entries, where we can't find an disuware.json file and map the entries to arrays
-        // in the required form of [path, disuwareJsonContent]
+    // then filter out all entries, where we can't find an disuware.json file and map the entries to arrays
+    // in the required form of [path, disuwareJsonContent]
         .then((aDisuwareJsonAccessAllowedList) => Promise.all(
             aDisuwareJsonAccessAllowedList
                 .filter(Array.isArray)
-                .map((aDescriptor) => fs.readFile(aDescriptor[0])
-                    .then((aPackageContent) => [aDescriptor[1], JSON.parse(aPackageContent.toString())]))))
+                .map((aDescriptor) => util.promisify(fs.readFile)(aDescriptor[0])
+                    .then((aModuleContent) => [aDescriptor[1], JSON.parse(aModuleContent.toString())]))))
         .then((aDisuwareJsonFileDescriptors) => {
             debug('Finished mapping the stat-list to actual disuware.json files');
 
@@ -70,14 +75,14 @@ function mMapStatListToActualDisuwareJsonFile(aStatDescriptors) {
 }
 
 /**
- * Maps the disuware package description files to actual package models
+ * Maps the disuware module description files to actual DisuwareModule models
  * @param {Array[]} aDisuwareJsonFileDescriptors
- * @return {Package[]} Array of elements looking like [path, disuwareJsonContent] for each package in packageDir
+ * @return {DisuwareModule[]} Array of elements looking like [path, disuwareJsonContent] for each module in all moduleDirs
  */
-function mMapActualDisuwareJsonFilesToActualPackageDescription(aDisuwareJsonFileDescriptors) {
-    debug('Start mapping disuware.json files to actual disuware packages');
+function mMapActualDisuwareJsonFilesToActualModuleDescription(aDisuwareJsonFileDescriptors) {
+    debug('Start mapping disuware.json files to actual disuware modules');
 
-    const resultingPackages = aDisuwareJsonFileDescriptors
+    const resultingModules = aDisuwareJsonFileDescriptors
         .filter(Array.isArray)
         .map((aDescriptor) => {
             // first extract the values we need from the descriptor
@@ -92,48 +97,45 @@ function mMapActualDisuwareJsonFilesToActualPackageDescription(aDisuwareJsonFile
             const valid = ajv.validate(disuwareJsonSchema, descriptorJson);
 
             if (!valid) {
-                throw new Error(`Disuware package description for ${descriptorPath} is invalid: ${ajv.errorsText()}`);
+                throw new Error(`Disuware module description for ${descriptorPath} is invalid: ${ajv.errorsText()}`);
             }
 
-            // and if we reach here, the assertions hold true, so we build a package description of this
-            const pkg = new Package();
+            // and if we reach here, the assertions hold true, so we build a module description of this
+            const mod = new DisuwareModule();
 
-            pkg.path = descriptorPath;
-            pkg.resolvedPath = require.resolve(descriptorPath);
-            pkg.interface = descriptorJson.interface;
-            pkg.version = descriptorJson.version;
-            pkg.requires = descriptorJson.requires || {};
+            mod.path = descriptorPath;
+            mod.resolvedPath = require.resolve(descriptorPath);
+            mod.interface = descriptorJson.interface;
+            mod.version = descriptorJson.version;
+            mod.requires = descriptorJson.requires || {};
 
-            // and finally return the package, so we can work with it
-            return pkg;
+            // and finally return the module, so we can work with it
+            return mod;
         })
-        .filter((aPackage) => aPackage !== null);
+        .filter((aModule) => aModule !== null);
 
-    debug('Finished mapping disuware.json files to actual disuware packages');
+    debug('Finished mapping disuware.json files to actual disuware modules');
 
-    return resultingPackages;
+    return resultingModules;
 }
 
 /**
- * Executes the loader and loads all packages in the packageDir
- * @return {Promise.<Package[]>} A list of loaded packages
+ * Executes the loader and loads all modules in the moduleDirs
+ * @return {Promise.<DisuwareModule[]>} A list of loaded modules
  */
 function execute() {
     debug('Start executing the loader');
-    const packageDir = config.getKey('packageDir');
 
     // first we read the directories files
-    return fs.readdir(packageDir)
-        // then we go for the content, grabbing the stat description for each, and generating an array with path and stats
-        .then(mMapDirContentToStatList)
-        // now we filter the descriptors and convert them in loaded <path>/disuware.json contents.
-        .then(mMapStatListToActualDisuwareJsonFile)
+    return mGenerateModulesStatList()
+    // now we filter the descriptors and convert them in loaded <path>/disuware.json contents.
+        .then(mMapStatListToActualDisuwareJsonFiles)
         // then filter down the array of descriptors. All descriptors are arrays, so filter for arrays
-        .then(mMapActualDisuwareJsonFilesToActualPackageDescription)
-        .then((aPackageList) => {
+        .then(mMapActualDisuwareJsonFilesToActualModuleDescription)
+        .then((aDisuwareList) => {
             debug('Finished executing the loaded');
 
-            return aPackageList;
+            return aDisuwareList;
         });
 }
 

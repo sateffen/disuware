@@ -1,9 +1,19 @@
 const debug = require('debug')('disuware:modules:configuration');
 const path = require('path');
 const fs = require('fs');
-const disuwareConfigSchema = require('../schemas/disuwarerunconfig.json');
 const Ajv = require('ajv');
+
+/**
+ * The local ajv validator object
+ * @type {ajv | ajv.Ajv}
+ */
 const ajv = new Ajv();
+
+/**
+ * A string telling the config file directory. Used for later resolves
+ * @type {string|null}
+ */
+let configFileDir = null;
 
 /**
  * A pointer to the config object
@@ -13,15 +23,17 @@ let configPointer = null;
 
 /**
  * Executes loading the config
- * @param {string} aConfigFile The path to the config file
+ * @param {string} aConfigPath The path to the config file
+ * @param {Object} aConfigSchema The config file schema description
  * @return {Promise.<undefined>} A promise telling about the success loading the config
  */
-function execute(aConfigFile) {
-    debug('Start loading configuration from file %s', aConfigFile);
-    const configFilePath = path.resolve(process.cwd(), aConfigFile);
+function execute(aConfigPath, aConfigSchema) {
+    debug(`Start loading configuration from file ${aConfigPath}`);
+    const configFilePath = path.resolve(process.cwd(), aConfigPath);
+    configFileDir = path.dirname(configFilePath);
 
     if (!fs.existsSync(configFilePath)) {
-        throw new ReferenceError('Given path to config-file does not exist: ' + configFilePath);
+        throw new ReferenceError(`Given path to config-file does not exist: ${configFilePath}`);
     }
     // else config file exists, so load it
     configPointer = require(configFilePath);
@@ -29,23 +41,13 @@ function execute(aConfigFile) {
     debug('Finished loading configuration');
     debug('Start validating the configuration');
 
-    const valid = ajv.validate(disuwareConfigSchema, configPointer);
+    const valid = ajv.validate(aConfigSchema, configPointer);
 
     if (!valid) {
         throw new Error(`Disuware configuration is invalid: ${ajv.errorsText()}`);
     }
 
     debug('Finished validating the configuration, looks alright');
-    debug('Start normalizing the configuration');
-
-    // first we read the config file dirname, cause we have to normalize the packageDir
-    const configFileDir = path.dirname(configFilePath);
-
-    // then prepare the configuration
-    configPointer.packageDir = path.resolve(configFileDir, configPointer.packageDir || './');
-    configPointer.services = configPointer.services || {};
-
-    debug('Finished normalizing the configuration');
 
     // and resolve the process
     return Promise.resolve();
@@ -57,7 +59,7 @@ function execute(aConfigFile) {
  * @return {*} The value for given key
  */
 function getKey(aKey) {
-    debug('Loading configuration for key %s', aKey);
+    debug(`Loading configuration for key ${aKey}`);
 
     // if there is no config object throw an error
     if (configPointer === null) {
@@ -68,37 +70,16 @@ function getKey(aKey) {
 }
 
 /**
- * Returns the config for given service from the config
- * @param {string} aService The service config to retrieve
- * @return {*} The value for given service
+ * Returns a path, resolved by the config file path
+ * @param {string} aPath The path to resolve by config file path
+ * @return {string} The resolved path
  */
-function getService(aService) {
-    debug('Loading configuration for service %s', aService);
-
-    // if there is no config object throw an error
-    if (configPointer === null) {
-        throw new ReferenceError('Config has not yet initialized! Call execute(configFile) to initialize it');
-    }
-
-    return configPointer.services[aService];
-}
-
-/**
- * Returns the config pointer
- * @return {Object|null}
- */
-function getConfigPointer() {
-    // if there is no config object throw an error
-    if (configPointer === null) {
-        throw new ReferenceError('Config has not yet initialized! Call execute(configFile) to initialize it');
-    }
-
-    return configPointer;
+function resolveByConfigFilePath(aPath) {
+    return path.resolve(configFileDir, aPath);
 }
 
 module.exports = {
     execute,
     getKey,
-    getService,
-    getConfigPointer,
+    resolveByConfigFilePath,
 };

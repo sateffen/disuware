@@ -10,23 +10,28 @@ const config = require('./configuration');
  */
 function execute() {
     debug('Start determining the cluster configuration');
-    const clusterMode = config.getKey('clusterMode');
+    const clusterConfig = config.getKey('cluster');
 
-    // if the clusterMode is actually given and we're the master
-    if (typeof clusterMode === 'number' && cluster.isMaster) {
-        // determine the num of processes
-        const forkCount = clusterMode === 0 ? os.cpus().length : clusterMode;
+    // if there is a cluster config, and we're the master, we can actually do something
+    if (typeof clusterConfig === 'object' && cluster.isMaster) {
+        debug('Found cluster configuration, starting to evaluate it');
 
-        debug(`Starting ${forkCount} workers`);
+        if (typeof clusterConfig.mode === 'number') {
+            // determine the num of processes to spawn
+            const forkCount = clusterConfig.mode === 0 ? os.cpus().length : clusterConfig.mode;
 
-        // and create all workers
-        for (let i = 0; i < forkCount; i++) {
-            cluster.fork();
+            debug(`Starting ${forkCount} workers`);
+
+            // and create all workers
+            for (let i = 0; i < forkCount; i++) {
+                cluster.fork();
+                debug(`Started worker number ${i}`);
+            }
+
+            debug(`Finished starting ${forkCount} workers`);
+
+            return Promise.reject(null);
         }
-
-        debug(`Finished starting ${forkCount} workers`);
-
-        return Promise.reject(null);
     }
     // else no clustering
     debug('No clustering required or in worker process');

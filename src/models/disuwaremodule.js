@@ -1,7 +1,7 @@
 /**
- * The package class
+ * The disuware module class
  */
-class Package {
+class DisuwareModule {
     /**
      * @constructor
      */
@@ -38,4 +38,4 @@ class Package {
     }
 }
 
-module.exports = Package;
+module.exports = DisuwareModule;

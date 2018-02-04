@@ -3,11 +3,11 @@ const semver = require('semver');
 
 /**
  * This helper function helps sorting the packages by interface name
- * @param {Package} a
- * @param {Package} b
+ * @param {DisuwareModule} a
+ * @param {DisuwareModule} b
  * @return {number}
  */
-function sortByInterface(a, b) {
+function mSortByInterface(a, b) {
     // first make the interfaces uppercase, so it's case independent
     const interfaceA = a.interface.toUpperCase();
     const interfaceB = b.interface.toUpperCase();
@@ -17,23 +17,23 @@ function sortByInterface(a, b) {
 }
 
 /**
- * The linker reads the list of packages, that was loaded by the loader, and sorts them for the executor.
- * It'll sort the list of package descriptors in a way, that each following package requirements can be
- * fullfilled by the previously initialized packages
- * @param {Package[]} aDisuwarePackageDescriptorList A list of loaded packages, that should get linked
- * @return {Promise.<Package[]>} Resolves with a list of ordered packages
+ * The linker reads the list of modules, that was loaded by the loader, and sorts them for the executor.
+ * It'll sort the list of module descriptors in a way, that each following modules requirements can be
+ * fulfilled by the previously initialized modules
+ * @param {DisuwareModule[]} aDisuwareModulsList A list of loaded modules, that should get linked
+ * @return {Promise.<DisuwareModule[]>} Resolves with a list of ordered modules
  */
-function execute(aDisuwarePackageDescriptorList) {
+function execute(aDisuwareModulsList) {
     debug('Starting linker to determine the initialization list');
 
     // first setup the linked elements list and cache
     // the linkedElementsCache looks like {interfaceName1: ['version1', 'version2'], interfaceName2: ['version1']}
     const linkedElementsCache = {};
     const listOfLinkedElements = [];
-    // then prepare the iterator lists. The disuware package descriptor list has to be sorted by the interface name,
+    // then prepare the iterator lists. The disuware module descriptor list has to be sorted by the interface name,
     // so the interfaces itself will get initialized as group (if possible) as well. That way we can link the newest
-    // package of each requirement later while initializing
-    let listOfItemsToLink = aDisuwarePackageDescriptorList.sort(sortByInterface);
+    // module of each requirement later while initializing
+    let listOfItemsToLink = aDisuwareModulsList.sort(mSortByInterface);
     let nextListOfItemsToLink = [];
 
     // and the flag for stuck linking. This flag is set to false for each iteration. If it's not set to true for an iteration
@@ -45,29 +45,29 @@ function execute(aDisuwarePackageDescriptorList) {
             // first we setup all data for the item
             const itemToLink = listOfItemsToLink[i];
             const requirements = Object.keys(itemToLink.requires);
-            // and we assume the package is linkable. That way packages without requirements are linkable by default
+            // and we assume the module is linkable. That way modules without requirements are linkable by default
             let linkable = true;
 
             if (Array.isArray(linkedElementsCache[itemToLink.interface]) && linkedElementsCache[itemToLink.interface].indexOf(itemToLink.version) > -1) {
-                throw new Error(`Found package with same interface and same version already: ${itemToLink.interface}@${itemToLink.version}`);
+                throw new Error(`Found module with same interface and same version already: ${itemToLink.interface}@${itemToLink.version}`);
             }
 
-            // then we go for each requirement, as long as the package is still linkable
+            // then we go for each requirement, as long as the module is still linkable
             for (let j = 0, jLen = requirements.length; j < jLen && linkable; j++) {
                 // extract the data we need from the requirement
                 const nameOfRequirement = requirements[j];
                 const versionOfRequirement = itemToLink.requires[nameOfRequirement];
 
                 // and if there is already something of the requirement linked, and some correct version is linked as well, this
-                // requirement is fullfilled
+                // requirement is fulfilled
                 linkable = Array.isArray(linkedElementsCache[nameOfRequirement]) &&
                     linkedElementsCache[nameOfRequirement].some((aVersion) => semver.satisfies(aVersion, versionOfRequirement));
             }
 
-            // if the previous iteration came to an end, we check whether the package is still linkable. It is still linkable
-            // if all requirements are fulfilled. If it's linkable, we write it to the list of linked packages and the cache
+            // if the previous iteration came to an end, we check whether the module is still linkable. It is still linkable
+            // if all requirements are fulfilled. If it's linkable, we write it to the list of linked modules and the cache
             if (linkable === true) {
-                debug(`Found linkable package ${itemToLink.interface}@${itemToLink.version}`);
+                debug(`Found linkable module ${itemToLink.interface}@${itemToLink.version}`);
 
                 // we need to check whether the cache is already started. If it is we just append the version
                 if (Array.isArray(linkedElementsCache[itemToLink.interface])) {

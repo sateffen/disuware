@@ -2,20 +2,19 @@ const debug = require('debug')('disuware:modules:executor');
 const NodeModule = require('module');
 const semver = require('semver');
 
-const config = require('./configuration');
-
 /**
  * This is a map of node module-ids with their corresponding maps, where required interfaces are mapped
  * to the corresponding node module-ids
  * @type {Object}
+ * @example {"nodeModuleId": {"anyware!interface": "realNodeModuleIdOfInterfaceInCorrectVersion"}}
  */
-const pkgRequirementsResolveMap = {};
+const moduleRequirementsResolveMap = {};
 
 // here we apply a proxy to the require function, which traps the require call and alters the arguments if needed
 NodeModule.prototype.require = new Proxy(NodeModule.prototype.require, {
     apply(aTarget, aThisContext, aArgumentsList) {
-        // if the module name starts with "disuware!" it might be a package we can resolve
-        if (aArgumentsList[0].indexOf('disuware!') === 0) {
+        // if the module name starts with "disuware!" it might be a module we can resolve
+        if (aArgumentsList[0].substr(0, 9) === 'disuware!') {
             debug(`Searching for the correct context for module with id "${aThisContext.id}"`);
             // so first find the correct context for this require
             let contextModule = aThisContext;
@@ -26,23 +25,23 @@ NodeModule.prototype.require = new Proxy(NodeModule.prototype.require, {
 
             debug(`Found context module with id "${contextModule.id}"`);
 
-            // if we actually found a context, and the package has a known resolve cache
-            if (pkgRequirementsResolveMap[contextModule.id]) {
+            // if we actually found a context, and the module has a known resolve cache
+            if (moduleRequirementsResolveMap[contextModule.id]) {
                 debug(`Found requirements resolve cache for context "${contextModule.id}"`);
 
                 // so search for the target module we want to load
-                const targetModuleId = pkgRequirementsResolveMap[contextModule.id][aArgumentsList[0]];
+                const targetModuleId = moduleRequirementsResolveMap[contextModule.id][aArgumentsList[0]];
 
                 // if we found a target module
                 if (typeof targetModuleId === 'string') {
-                    debug(`Found package to resolve "${aArgumentsList[0]}" in context "${contextModule.id}"`);
+                    debug(`Found module to resolve "${aArgumentsList[0]}" in context "${contextModule.id}"`);
 
                     // return it's exports
                     return require.cache[targetModuleId].exports;
                 }
                 // else we can't find anything fitting, to the original logic has to help out
                 else {
-                    debug(`Found no package to resolve "${aArgumentsList[0]}" in context "${contextModule.id}", passing back to node`);
+                    debug(`Found no module to resolve "${aArgumentsList[0]}" in context "${contextModule.id}", passing back to node`);
                 }
             }
         }
@@ -53,7 +52,7 @@ NodeModule.prototype.require = new Proxy(NodeModule.prototype.require, {
 });
 
 /**
- * Generates a map that links the packages requirements to the corresponding modules
+ * Generates a map that links the modules requirements to the corresponding real modules
  * @param {Object} aRequirementResolveMap
  * @param {Object} aRequirements
  * @return {Object}
@@ -63,15 +62,15 @@ function mGetRequirementsLinkMap(aRequirementResolveMap, aRequirements) {
     const linkMap = {};
     const requiredInterfaces = Object.keys(aRequirements);
 
-    // then go for each interface and find the fitting package in the requirements resolve map
+    // then go for each interface and find the fitting module in the requirements resolve map
     for (let i = 0, iLen = requiredInterfaces.length; i < iLen; i++) {
         const neededInterface = requiredInterfaces[i];
         const neededVersion = aRequirements[neededInterface];
 
-        const fittingPkg = aRequirementResolveMap[neededInterface]
+        const fittingModule = aRequirementResolveMap[neededInterface]
             .find((aDescription) => semver.satisfies(aDescription.version, neededVersion));
 
-        linkMap['disuware!' + neededInterface] = fittingPkg.resolvedPath;
+        linkMap['disuware!' + neededInterface] = fittingModule.resolvedPath;
     }
 
     return linkMap;
@@ -79,55 +78,54 @@ function mGetRequirementsLinkMap(aRequirementResolveMap, aRequirements) {
 
 /**
  * Execute the executor
- * @param {Package[]} aPackageList The package list to execute. The packages will get initialized
- *                                 in order of the list
+ * @param {DisuwareModule[]} aDisuwareModuleList The module list to execute. The modules will get initialized
+ *                                               in order of the list
  * @return {Promise.<undefined>} A promise telling about the success (or fail) of initialization
  */
-function execute(aPackageList) {
-    debug('Start executing all disuware packages');
+function execute(aDisuwareModuleList) {
+    debug('Start executing all disuware modules');
 
     // first we setup a promise pointer, that'll point to the next promise we can use for building our chain
     let promisePointer = Promise.resolve();
-    const generalConfig = config.getConfigPointer();
-    const pkgInterfaceResolveCache = {};
+    const moduleInterfaceResolveCache = {};
 
-    // go for each package, cache its resolve-path and then initialize it
-    for (let i = 0, iLen = aPackageList.length; i < iLen; i++) {
-        // first cache the package pointer
-        const pkgToInit = aPackageList[i];
+    // go for each module, cache its resolve-path and then initialize it
+    for (let i = 0, iLen = aDisuwareModuleList.length; i < iLen; i++) {
+        // first cache the module pointer
+        const moduleToInit = aDisuwareModuleList[i];
 
         // finally we append the promise chain for initializing the process with the next service
         promisePointer = promisePointer.then(() => {
-            debug(`Loading module with interface ${pkgToInit.interface}@${pkgToInit.version}`);
+            debug(`Loading module with interface ${moduleToInit.interface}@${moduleToInit.version}`);
 
             // first we setup the actual node module, that we wanna use
-            const pkgModule = new NodeModule(pkgToInit.resolvedPath);
+            const moduleNodeModule = new NodeModule(moduleToInit.resolvedPath);
             // then we generate a map to map all possible requires to real node module ids
-            pkgRequirementsResolveMap[pkgToInit.resolvedPath] = mGetRequirementsLinkMap(pkgInterfaceResolveCache, pkgToInit.requires);
-            // and write the package to the require cache
-            require.cache[pkgToInit.resolvedPath] = pkgModule;
+            moduleRequirementsResolveMap[moduleToInit.resolvedPath] = mGetRequirementsLinkMap(moduleInterfaceResolveCache, moduleToInit.requires);
+            // and write the module to the require cache
+            require.cache[moduleToInit.resolvedPath] = moduleNodeModule;
 
             // when we actually load the module
-            pkgModule.load(pkgToInit.resolvedPath);
+            moduleNodeModule.load(moduleToInit.resolvedPath);
 
             // if there is already a list for this interface in the interface resolve cache
-            if (Array.isArray(pkgInterfaceResolveCache[pkgToInit.interface])) {
-                // just push the new pkg
-                pkgInterfaceResolveCache[pkgToInit.interface].push(pkgToInit);
-                pkgInterfaceResolveCache[pkgToInit.interface] = pkgInterfaceResolveCache[pkgToInit.interface]
+            if (Array.isArray(moduleInterfaceResolveCache[moduleToInit.interface])) {
+                // just push the new module
+                moduleInterfaceResolveCache[moduleToInit.interface].push(moduleToInit);
+                moduleInterfaceResolveCache[moduleToInit.interface] = moduleInterfaceResolveCache[moduleToInit.interface]
                     .sort((a, b) => semver.rcompare(a.version, b.version));
             }
             // else create the list
             else {
-                pkgInterfaceResolveCache[pkgToInit.interface] = [pkgToInit];
+                moduleInterfaceResolveCache[moduleToInit.interface] = [moduleToInit];
             }
 
-            // if there is an disuware function in the package, we call it
-            if (typeof pkgModule.exports.__disuwareInit === 'function') {
-                debug(`Package with interface ${pkgToInit.interface}@${pkgToInit.version} has an __disuwareInit method, so call it`);
+            // if there is an disuware function in the module, we call it
+            if (typeof moduleNodeModule.exports.__disuwareInit === 'function') {
+                debug(`Module with interface ${moduleToInit.interface}@${moduleToInit.version} has an __disuwareInit method, so call it`);
 
                 // and then call __disuwareInit
-                return pkgModule.exports.__disuwareInit(generalConfig);
+                return moduleNodeModule.exports.__disuwareInit();
             }
 
             return null;
