@@ -8,7 +8,7 @@ debug('Start parsing process arguments');
 commander
     .version(pkg.version)
     .description(pkg.description)
-    .command('run <configFile>', 'Executes given configuration')
+    .command('run <configFile>', 'Executes given configuration and starts the application')
     .parse(process.argv);
 
 debug('Finished parsing process arguments');

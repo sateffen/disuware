@@ -15,6 +15,7 @@ debug('Finished loading moduls');
 debug('Start parsing process arguments');
 
 commander
+    .usage('[options] <configFile>')
     .parse(process.argv);
 
 debug('Finished parsing process arguments');
