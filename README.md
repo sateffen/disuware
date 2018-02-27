@@ -1,8 +1,24 @@
-# disuware (work in progress)
+# disuware
 
-[ ![Codeship Status for sateffen/disuware](https://app.codeship.com/projects/aa841420-e1da-0135-85bf-62c27b79889e/status?branch=master)](https://app.codeship.com/projects/266782)
+[![Codeship Status for sateffen/disuware](https://app.codeship.com/projects/aa841420-e1da-0135-85bf-62c27b79889e/status?branch=master)](https://app.codeship.com/projects/266782)
 
 Application initialization like a boss!
+
+## Install it
+
+disuware is a cli tool, so it's best installed globally: `npm install -g disuware` (**not yet**,
+it's still in prerelease, so git only).
+
+## Use it
+
+disuware is a cli tool which uses a subcommand style for using it. The following
+subcommands are available:
+
+### run <configFile>
+
+**Description**: Loads given config file and executes it as process.
+
+**Example**: disuware run myconfig.json
 
 ## What does it do (short story)
 
@@ -15,11 +31,6 @@ So basically you can switch out modules (node-modules) with other modules, that
 implement the same interface, and disuware will handle linking them correctly.
 
 For a longer description see *docs/what-does-it-do-long-story.md*.
-
-## How to use it
-
-Checkout the *docs/* and *examples/* folders. If you've got any questions left, please
-open an issue, so I can add the missing piece of documentation.
 
 ## Why?
 
