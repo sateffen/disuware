@@ -4,17 +4,18 @@
   "description": "Dependency injecting start up 'ware",
   "bin": "./src/bin/disuware.js",
   "dependencies": {
-    "ajv": "~6.1.1",
-    "commander": "~2.14.1",
+    "ajv": "~6.3.0",
+    "commander": "~2.15.1",
     "debug": "~3.1.0",
     "semver": "~5.5.0"
   },
   "devDependencies": {
-    "eslint": "~4.17.0",
-    "eslint-config-google": "~0.9.1"
+    "eslint": "~4.19.1",
+    "eslint-config-google": "~0.9.1",
+    "jest": "~22.4.3"
   },
   "scripts": {
     "lint": "eslint -c .eslintrc src",
-    "test": "node src/bin/disuware.js run examples/consoledicts/config.json"
+    "test": "jest --config=jest.json"
   }
 }
