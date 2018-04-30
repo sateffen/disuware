@@ -1,0 +1,8 @@
+{
+    "interface": "graphqlserver",
+    "version": "1.0.0",
+    "requires": {
+        "configprovider": "~1.0.0",
+        "httpserver": "~1.0.0"
+    }
+}

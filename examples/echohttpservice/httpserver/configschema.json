@@ -1,0 +1,52 @@
+{
+  "type": "object",
+  "properties": {
+    "http": {
+      "type": "object",
+      "properties": {
+        "host": {
+          "type": "string"
+        },
+        "port": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65535
+        }
+      },
+      "required": ["port"],
+      "additionalProperties": false
+    },
+    "https": {
+      "type": "object",
+      "properties": {
+        "host": {
+          "type": "string"
+        },
+        "port": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65535
+        },
+        "key": {
+          "type": "string"
+        },
+        "cert": {
+          "type": "string"
+        }
+      },
+      "required": ["port", "key", "cert"],
+      "additionalProperties": false
+    },
+    "websocket": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string"
+        }
+      },
+      "required": ["path"],
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
