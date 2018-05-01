@@ -6,8 +6,7 @@ Application initialization like a boss!
 
 ## Install it
 
-disuware is a cli tool, so it's best installed globally: `npm install -g disuware` (**not yet**,
-it's still in prerelease, so git only).
+disuware is a cli tool, so it's best installed globally: `npm install -g disuware`.
 
 ## Use it
 
