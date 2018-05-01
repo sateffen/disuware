@@ -4,3 +4,4 @@ testapp
 
 !.eslintrc
 !.gitignore
+!.npmignore
