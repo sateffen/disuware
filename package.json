@@ -1,6 +1,6 @@
 {
   "name": "disuware",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Dependency injecting start up 'ware",
   "bin": "./src/bin/disuware.js",
   "license": "MIT",
