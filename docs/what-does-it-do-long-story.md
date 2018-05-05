@@ -7,9 +7,9 @@ version.
 
 So each subdirectory contains a file called *disuwarepackage.json* which describes
 the package in that directory. In the description you have to tell at least two
-informations: The implemented interface and the version of the implemented interface.
+information: The implemented interface and the version of the implemented interface.
 
-Additionally you can define the required other interfaces in their required versions.
+Additionally, you can define the required other interfaces in their required versions.
 So an example *disuwarepackage.json* file looks like:
 
 ```json
@@ -22,8 +22,8 @@ So an example *disuwarepackage.json* file looks like:
 }
 ```
 
-Disuware will load all descriptions of modules available, and creates an ordered list
-of this packages, telling in which order the packages have to be initialized to work
+Disuware will load all descriptions of modules available and creates an ordered list
+of these packages, telling in which order the packages have to be initialized to work
 with each other. So in this example the list would look like `['database', 'authentication']`.
 
 Now the executor will load each of these modules as node modules in the determined
@@ -35,7 +35,7 @@ That way your modules will get initialized in the correct order.
 
 Up till now this is not that awesome, but there is a big special bonus:
 
-Your modules implement interfaces, which are different than the package names. That way
+Your modules implement interfaces, which are different from the package names. That way
 you can define an interface called "*authentication*" for your projects, looking like:
 
 ```js
@@ -63,17 +63,17 @@ other modules.
 
 **Pretty neat, but there is more:**
 
-It's great to differenciate between interface and package-name, so it's far simpler
+It's great to differentiate between interface and package-name, so it's far simpler
 to generate reuse. But sometimes you define a new interface for your modules (like
 *database* in version *2.0.0*), which has breaking changes. Now you have to change
 all other packages at once to get it working... or do you? Well, disuware makes a
 difference between *database@1.0.0* and *database@2.0.0*. In fact even*database@1.0.1*
-is different than the others, sooo disuware will load and initialize all this different
+is different from the others, so disuware will load and initialize all this different
 modules. Now some modules require a module implementing *database@^1.0.0*, but
 newer modules require a module implementing *database@^2.0.0*. Disuware loaded and
 initialized both, and will link the right one to your module. So your module still
 calls `require('disuware!database')`, but because disuware knows about which modules
-needs which version of which interface, it'll pass back the correct fitting module.
+need which version of which interface, it'll pass back the correct fitting module.
 (So for some modules `require('disuware!database')` will resolve to the module
 implementing *database@2.0.0* while others will resolve to the module implementing
 *database@1.0.0*)

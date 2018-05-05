@@ -3,7 +3,7 @@
 The run-config.json is the basic configuration for the process disuware should start.
 It is used for the `disuware run` command.
 
-Of cause you can choose any other name for the file as well, but it has to be in
+Of cause, you can choose any other name for the file as well, but it has to be in
 JSON format.
 
 You find a JSON-schema in *src/schemas/disuwarerunconfig.json*, so you can validate
@@ -24,7 +24,7 @@ config file.
 ## cluster
 
 **Description**: Defines the cluster mode to use for this run config. If not configured
-disuware will not setup a cluster at all, and run the config just like usual. If configured
+disuware will not setup a cluster at all, and run the config just like usual. If configured to,
 disuware will fork processes like configured with the node cluster module.
 
 **Type**: Object

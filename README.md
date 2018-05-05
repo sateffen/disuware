@@ -40,7 +40,7 @@ problem for me and reuse it in different projects, but each project is slightly 
 So I want to reuse my stuff, but have to replace some components without breaking all the
 other stuff (and without refactoring all require-calls each time again).
 
-In Java most of this stuff is solved by standartising things. You've got JDBC for databases
+In Java most of this stuff is solved by standardizing things. You've got JDBC for databases
 or servelets for webstuff, but in JS - no. There are some APIs like Express or React,
 that are reimplemented in different other libs, have the same API, but the modules
 explicitly name the other dependencies. For frontend we define webpack aliases, for node...

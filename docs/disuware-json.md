@@ -5,14 +5,14 @@ It's similar to the *package.json* for node-modules. Each module you want to loa
 with disuware needs to contain a *disuware.json* file at its root directory.
 
 This file does not define the modules name or dependencies for NPM, it defines the
-modules **interface** and **interface version**, as well as the depended interfaces
+modules **interface** and **interface version**, as well as the dependent interfaces
 and their versions. Disuware will use this file to generate the dependency injection
 system.
 
 Each combination of interface and version has to be unique in the process, but one
 interface in multiple versions is allowed. So you can have something like *database@1.0.0*
 and *database@2.0.0* (database = a process implementing your database connection) in
-your process, and disuware will handle injecting the correct versions for your dependend
+your process, and disuware will handle injecting the correct versions for your dependent
 modules. Even *database@1.0.0* and *database@1.0.1* in the same process is allowed
 (even though patch-versions in interfaces are not useful). That allows for migrating
 your application piece by piece to a new interface.
@@ -32,7 +32,7 @@ to validate your config.
 
 **Description**: A string representing the version of the interface implemented. It's a
 complete semver version (so 3 digits, *1.0.0* for example), and can't be any other
-format. Usually interfaces don't have a patch version, but for convenience, its there.
+format. Usually interfaces don't have a patch version, but for convenience, it's there.
 
 **Type**: String
 
@@ -52,7 +52,7 @@ modifiers as in a *package.json*.
 
 ```
 {
-    "interface1": "1.0.0", // expicit version
+    "interface1": "1.0.0", // explicit version
     "interface2": "~1.0.0", // newest patch version
     "interface3": "^1.0.0" // newest minor or patch version
 }
