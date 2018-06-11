@@ -19,5 +19,17 @@
   "scripts": {
     "lint": "eslint -c .eslintrc src",
     "test": "jest --config=jest.json"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sateffen/disuware.git"
+  },
+  "bugs": "https://github.com/sateffen/disuware/issues",
+  "keywords": [
+    "dependency",
+    "dependency injection",
+    "injection",
+    "start",
+    "di"
+  ]
 }
