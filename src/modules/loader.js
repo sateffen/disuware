@@ -17,7 +17,7 @@ function mGenerateModulesStatList() {
     debug('Started generating module dirs stats lists');
     const moduleDirs = config
         .getKey('moduleDirs')
-        .map(config.resolveByConfigFilePath);
+        .map(config.resolveByExecutionDir);
 
     return Promise
         .all(moduleDirs.map((aDir) => util.promisify(fs.readdir)(aDir)))

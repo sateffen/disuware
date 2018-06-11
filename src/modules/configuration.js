@@ -1,6 +1,5 @@
 const debug = require('debug')('disuware:modules:configuration');
 const path = require('path');
-const fs = require('fs');
 const Ajv = require('ajv');
 
 /**
@@ -10,10 +9,10 @@ const Ajv = require('ajv');
 const ajv = new Ajv();
 
 /**
- * A string telling the config file directory. Used for later resolves
+ * A string telling the execution directory. Used for later resolves
  * @type {string|null}
  */
-let configFileDir = null;
+let executionDir = null;
 
 /**
  * A pointer to the config object
@@ -23,22 +22,21 @@ let configPointer = null;
 
 /**
  * Executes loading the config
- * @param {string} aConfigPath The path to the config file
+ * @param {string} aExecutionDirectory
+ * @param {Object} aConfigObject The config object to use for this run
  * @param {Object} aConfigSchema The config file schema description
  * @return {Promise.<undefined>} A promise telling about the success loading the config
  */
-function execute(aConfigPath, aConfigSchema) {
-    debug(`Start loading configuration from file ${aConfigPath}`);
-    const configFilePath = path.resolve(process.cwd(), aConfigPath);
-    configFileDir = path.dirname(configFilePath);
+function execute(aExecutionDirectory, aConfigObject, aConfigSchema) {
+    debug('Start executing config validator');
 
-    if (!fs.existsSync(configFilePath)) {
-        throw new ReferenceError(`Given path to config-file does not exist: ${configFilePath}`);
+    if (typeof aExecutionDirectory !== 'string') {
+        throw new TypeError('Disuware configuration got called with a invalid execution directory');
     }
-    // else config file exists, so load it
-    configPointer = require(configFilePath);
 
-    debug('Finished loading configuration');
+    executionDir = aExecutionDirectory;
+    configPointer = aConfigObject;
+
     debug('Start validating the configuration');
 
     const valid = ajv.validate(aConfigSchema, configPointer);
@@ -74,12 +72,12 @@ function getKey(aKey) {
  * @param {string} aPath The path to resolve by config file path
  * @return {string} The resolved path
  */
-function resolveByConfigFilePath(aPath) {
-    return path.resolve(configFileDir, aPath);
+function resolveByExecutionDir(aPath) {
+    return path.resolve(executionDir, aPath);
 }
 
 module.exports = {
     execute,
     getKey,
-    resolveByConfigFilePath,
+    resolveByExecutionDir,
 };
