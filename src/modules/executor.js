@@ -6,7 +6,7 @@ const semver = require('semver');
  * This is a map of node module-ids with their corresponding maps, where required interfaces are mapped
  * to the corresponding node module-ids
  * @type {Object}
- * @example {"nodeModuleId": {"anyware!interface": "realNodeModuleIdOfInterfaceInCorrectVersion"}}
+ * @example {"nodeModuleId": {"disuware!interface": "realNodeModuleIdOfInterfaceInCorrectVersion"}}
  */
 const moduleRequirementsResolveMap = {};
 
