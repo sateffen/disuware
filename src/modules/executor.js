@@ -1,6 +1,7 @@
 const debug = require('debug')('disuware:modules:executor');
 const NodeModule = require('module');
 const semver = require('semver');
+const environment = require('./environment');
 
 /**
  * This is a map of node module-ids with their corresponding maps, where required interfaces are mapped
@@ -13,8 +14,12 @@ const moduleRequirementsResolveMap = {};
 // here we apply a proxy to the require function, which traps the require call and alters the arguments if needed
 NodeModule.prototype.require = new Proxy(NodeModule.prototype.require, {
     apply(aTarget, aThisContext, aArgumentsList) {
-        // if the module name starts with "disuware!" it might be a module we can resolve
-        if (aArgumentsList[0].substr(0, 9) === 'disuware!') {
+        // if the require-call is for the disuware! environment module, just return it's application environment part
+        if (aArgumentsList[0] === 'disuware!') {
+            return environment.applicationEnvironment;
+        }
+        // else if the module name starts with "disuware!" it might be a module we can resolve
+        else if (aArgumentsList[0].substr(0, 9) === 'disuware!') {
             debug(`Searching for the correct context for module with id "${aThisContext.id}"`);
             // so first find the correct context for this require
             let contextModule = aThisContext;
@@ -133,7 +138,8 @@ function execute(aDisuwareModuleList) {
     }
 
     // finally we return the promise pointer, because it'll tell when the application is ready
-    return promisePointer;
+    return promisePointer
+        .then(environment.emitApplicationStartUpCompleteEvent);
 }
 
 module.exports = {
