@@ -22,8 +22,7 @@ const applicationEnvironment = {
  * Emits the `applicationStartUpComplete` event for the environment
  */
 function emitApplicationStartUpCompleteEvent() {
-    // TODO: Finalize the eventname
-    eventEmitter.emit('applicationStartUpComplete');
+    eventEmitter.emit('applicationInitComplete');
 }
 
 eventEmitter.on('newListener', (aEvent) => debug(`Added eventlistener for event ${aEvent}`));
