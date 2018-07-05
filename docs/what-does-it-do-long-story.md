@@ -1,16 +1,15 @@
 # What does it do exactly (long story)
 
-Disuware is configured by a config file. The config file contains a *packageDir*,
-which describes a directory with subdirectories. Each subdirectory represents
-a package, providing a module and implements a specific interface in a specific
-version.
+Disuware is configured by a config file. The config file contains a *packageDir*, which describes a directory with
+subdirectories. Each subdirectory represents a package, providing a module and implements a specific interface in a
+specific version.
 
-So each subdirectory contains a file called *disuwarepackage.json* which describes
-the package in that directory. In the description you have to tell at least two
-information: The implemented interface and the version of the implemented interface.
+So each subdirectory contains a file called *disuwarepackage.json* which describes the package in that directory. In the
+description you have to tell at least two information: The implemented interface and the version of the implemented
+interface.
 
-Additionally, you can define the required other interfaces in their required versions.
-So an example *disuwarepackage.json* file looks like:
+Additionally, you can define the required other interfaces in their required versions. So an example *disuwarepackage.json*
+file looks like:
 
 ```json
 {
@@ -22,12 +21,12 @@ So an example *disuwarepackage.json* file looks like:
 }
 ```
 
-Disuware will load all descriptions of modules available and creates an ordered list
-of these packages, telling in which order the packages have to be initialized to work
-with each other. So in this example the list would look like `['database', 'authentication']`.
+Disuware will load all descriptions of modules available and creates an ordered list of these packages, telling in which
+order the packages have to be initialized to work with each other. So in this example the list would look like
+`['database', 'authentication']`.
 
-Now the executor will load each of these modules as node modules in the determined
-order, and calls `__disuwareInit` on these modules, if this function is exported.
+Now the executor will load each of these modules as node modules in the determined order, and calls `__disuwareInit` on
+these modules, if this function is exported.
 
 That way your modules will get initialized in the correct order.
 
@@ -35,8 +34,8 @@ That way your modules will get initialized in the correct order.
 
 Up till now this is not that awesome, but there is a big special bonus:
 
-Your modules implement interfaces, which are different from the package names. That way
-you can define an interface called "*authentication*" for your projects, looking like:
+Your modules implement interfaces, which are different from the package names. That way you can define an interface called
+"*authentication*" for your projects, looking like:
 
 ```js
 {
@@ -44,36 +43,28 @@ you can define an interface called "*authentication*" for your projects, looking
 }
 ```
 
-which authenticates the user against your database. In your private npm the package is
-called "authenticate-local", all fine. The next project you have to use a different
-authentication method, ldap for example, but you have some other modules interacting
-with your authentication module, so they all use `require('authenticate-local')`. To use
-the package *authenticate-ldap* you have to find a solution, that is hard to maintain.
+which authenticates the user against your database. In your private npm the package is called "authenticate-local", all
+fine. The next project you have to use a different authentication method, ldap for example, but you have some other modules
+interacting with your authentication module, so they all use `require('authenticate-local')`. To use the package
+*authenticate-ldap* you have to find a solution, that is hard to maintain.
 But one point is great: The API (the interface) is the same.
 
-Here comes disuware, allowing you to call `require('disuware!authentication')`, which
-resolves to a package implementing the *authentication* interface and providing it as
-a module. That way you can download a different node-package (*authenticate-ldap*
-instead of *authenticate-local*), but all other packages using this module don't have
-to be changed to work with it.
+Here comes disuware, allowing you to call `require('disuware!authentication')`, which resolves to a package implementing
+the *authentication* interface and providing it as a module. That way you can download a different node-package
+(*authenticate-ldap* instead of *authenticate-local*), but all other packages using this module don't have to be changed
+to work with it.
 
-That way you can define an interface, which your applications use, but have different
-implementations for different usecases - without losing compatibility with all your
-other modules.
+That way you can define an interface, which your applications use, but have different implementations for different
+usecases - without losing compatibility with all your other modules.
 
 **Pretty neat, but there is more:**
 
-It's great to differentiate between interface and package-name, so it's far simpler
-to generate reuse. But sometimes you define a new interface for your modules (like
-*database* in version *2.0.0*), which has breaking changes. Now you have to change
-all other packages at once to get it working... or do you? Well, disuware makes a
-difference between *database@1.0.0* and *database@2.0.0*. In fact even*database@1.0.1*
-is different from the others, so disuware will load and initialize all this different
-modules. Now some modules require a module implementing *database@^1.0.0*, but
-newer modules require a module implementing *database@^2.0.0*. Disuware loaded and
-initialized both, and will link the right one to your module. So your module still
-calls `require('disuware!database')`, but because disuware knows about which modules
-need which version of which interface, it'll pass back the correct fitting module.
-(So for some modules `require('disuware!database')` will resolve to the module
-implementing *database@2.0.0* while others will resolve to the module implementing
-*database@1.0.0*)
+It's great to differentiate between interface and package-name, so it's far simpler to generate reuse. But sometimes you
+define a new interface for your modules (like *database* in version *2.0.0*), which has breaking changes. Now you have to
+change all other packages at once to get it working... or do you? Well, disuware makes a difference between *database@1.0.0*
+and *database@2.0.0*. In fact even*database@1.0.1* is different from the others, so disuware will load and initialize all
+this different modules. Now some modules require a module implementing *database@^1.0.0*, but newer modules require a module
+implementing *database@^2.0.0*. Disuware loaded and initialized both, and will link the right one to your module. So your
+module still calls `require('disuware!database')`, but because disuware knows about which modules need which version of
+which interface, it'll pass back the correct fitting module. (So for some modules `require('disuware!database')` will
+resolve to the module implementing *database@2.0.0* while others will resolve to the module implementing *database@1.0.0*).
