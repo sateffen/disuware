@@ -7,6 +7,7 @@ const httpConfigSchema = require('./configschema.json');
 const Ajv = require('ajv');
 const ajv = new Ajv();
 
+const disuwareEnv = require('disuware!');
 const configProvder = require('disuware!configprovider');
 
 const httpServerList = [];
@@ -60,7 +61,7 @@ function __disuwareInit() {
         const httpModule = require('http');
         const httpServer = httpModule.createServer(router.handler.bind(router));
 
-        httpServer.listen(config.http.port, config.http.host);
+        disuwareEnv.once('applicationInitComplete', () => httpServer.listen(config.http.port, config.http.host));
         httpServerList.push(httpServer);
     }
 
@@ -76,7 +77,7 @@ function __disuwareInit() {
             router.handler.bind(router)
         );
 
-        httpsServer.listen(config.https.port, config.https.host);
+        disuwareEnv.once('applicationInitComplete', () => httpsServer.listen(config.https.port, config.https.host));
         httpServerList.push(httpsServer);
     }
 
