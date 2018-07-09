@@ -7,7 +7,6 @@ const httpConfigSchema = require('./configschema.json');
 const Ajv = require('ajv');
 const ajv = new Ajv();
 
-const disuwareEnv = require('disuware!');
 const configProvder = require('disuware!configprovider');
 
 const httpServerList = [];
@@ -46,10 +45,11 @@ function registerMethodHandler(aRegisterFunction, aRoute, aHandler) {
 
 /**
  * Initializes the httpserver
+ * @param {Promise} aInitCompletedPromise
  * @return {Promise<void>} An empty promise to finish the chain
  * @private
  */
-function __disuwareInit() {
+function __disuwareInit(aInitCompletedPromise) {
     const config = configProvder.getKey('httpserver');
     const valid = ajv.validate(httpConfigSchema, config);
 
@@ -61,7 +61,7 @@ function __disuwareInit() {
         const httpModule = require('http');
         const httpServer = httpModule.createServer(router.handler.bind(router));
 
-        disuwareEnv.once('applicationInitComplete', () => httpServer.listen(config.http.port, config.http.host));
+        aInitCompletedPromise.then(() => httpServer.listen(config.http.port, config.http.host));
         httpServerList.push(httpServer);
     }
 
@@ -77,7 +77,8 @@ function __disuwareInit() {
             router.handler.bind(router)
         );
 
-        disuwareEnv.once('applicationInitComplete', () => httpsServer.listen(config.https.port, config.https.host));
+
+        aInitCompletedPromise.then(() => httpsServer.listen(config.https.port, config.https.host));
         httpServerList.push(httpsServer);
     }
 

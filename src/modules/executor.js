@@ -1,7 +1,6 @@
 const debug = require('debug')('disuware:modules:executor');
 const NodeModule = require('module');
 const semver = require('semver');
-const environment = require('./environment');
 
 /**
  * This is a map of node module-ids with their corresponding maps, where required interfaces are mapped
@@ -14,12 +13,8 @@ const moduleRequirementsResolveMap = {};
 // here we apply a proxy to the require function, which traps the require call and alters the arguments if needed
 NodeModule.prototype.require = new Proxy(NodeModule.prototype.require, {
     apply(aTarget, aThisContext, aArgumentsList) {
-        // if the require-call is for the disuware! environment module, just return it's application environment part
-        if (aArgumentsList[0] === 'disuware!') {
-            return environment.applicationEnvironment;
-        }
-        // else if the module name starts with "disuware!" it might be a module we can resolve
-        else if (aArgumentsList[0].substr(0, 9) === 'disuware!') {
+        // if the module name starts with "disuware!" it might be a module we can resolve
+        if (aArgumentsList[0].substr(0, 9) === 'disuware!') {
             debug(`Searching for the correct context for module with id "${aThisContext.id}"`);
             // so first find the correct context for this require
             let contextModule = aThisContext;
@@ -90,56 +85,63 @@ function mGetRequirementsLinkMap(aRequirementResolveMap, aRequirements) {
 function execute(aDisuwareModuleList) {
     debug('Start executing all disuware modules');
 
-    // first we setup a promise pointer, that'll point to the next promise we can use for building our chain
-    let promisePointer = Promise.resolve();
-    const moduleInterfaceResolveCache = {};
+    // we create a completetion promise, that is passed to the disuwareInit calls as well
+    const completionPromise = new Promise((aResolve, aReject) => {
+        // first we setup a promise pointer, that'll point to the next promise we can use for building our chain
+        let promisePointer = Promise.resolve();
+        const moduleInterfaceResolveCache = {};
 
-    // go for each module, cache its resolve-path and then initialize it
-    for (let i = 0, iLen = aDisuwareModuleList.length; i < iLen; i++) {
-        // first cache the module pointer
-        const moduleToInit = aDisuwareModuleList[i];
+        // go for each module, cache its resolve-path and then initialize it
+        for (let i = 0, iLen = aDisuwareModuleList.length; i < iLen; i++) {
+            // first cache the module pointer
+            const moduleToInit = aDisuwareModuleList[i];
 
-        // finally we append the promise chain for initializing the process with the next service
-        promisePointer = promisePointer.then(() => {
-            debug(`Loading module with interface ${moduleToInit.interface}@${moduleToInit.version}`);
+            // finally we append the promise chain for initializing the process with the next service
+            promisePointer = promisePointer.then(() => {
+                debug(`Loading module with interface ${moduleToInit.interface}@${moduleToInit.version}`);
 
-            // first we setup the actual node module, that we wanna use
-            const moduleNodeModule = new NodeModule(moduleToInit.resolvedPath);
-            // then we generate a map to map all possible requires to real node module ids
-            moduleRequirementsResolveMap[moduleToInit.resolvedPath] = mGetRequirementsLinkMap(moduleInterfaceResolveCache, moduleToInit.requires);
-            // and write the module to the require cache
-            require.cache[moduleToInit.resolvedPath] = moduleNodeModule;
+                // first we setup the actual node module, that we wanna use
+                const moduleNodeModule = new NodeModule(moduleToInit.resolvedPath);
+                // then we generate a map to map all possible requires to real node module ids
+                moduleRequirementsResolveMap[moduleToInit.resolvedPath] = mGetRequirementsLinkMap(moduleInterfaceResolveCache, moduleToInit.requires);
+                // and write the module to the require cache
+                require.cache[moduleToInit.resolvedPath] = moduleNodeModule;
 
-            // when we actually load the module
-            moduleNodeModule.load(moduleToInit.resolvedPath);
+                // when we actually load the module
+                moduleNodeModule.load(moduleToInit.resolvedPath);
 
-            // if there is already a list for this interface in the interface resolve cache
-            if (Array.isArray(moduleInterfaceResolveCache[moduleToInit.interface])) {
-                // just push the new module
-                moduleInterfaceResolveCache[moduleToInit.interface].push(moduleToInit);
-                moduleInterfaceResolveCache[moduleToInit.interface] = moduleInterfaceResolveCache[moduleToInit.interface]
-                    .sort((a, b) => semver.rcompare(a.version, b.version));
-            }
-            // else create the list
-            else {
-                moduleInterfaceResolveCache[moduleToInit.interface] = [moduleToInit];
-            }
+                // if there is already a list for this interface in the interface resolve cache
+                if (Array.isArray(moduleInterfaceResolveCache[moduleToInit.interface])) {
+                    // just push the new module
+                    moduleInterfaceResolveCache[moduleToInit.interface].push(moduleToInit);
+                    moduleInterfaceResolveCache[moduleToInit.interface] = moduleInterfaceResolveCache[moduleToInit.interface]
+                        .sort((a, b) => semver.rcompare(a.version, b.version));
+                }
+                // else create the list
+                else {
+                    moduleInterfaceResolveCache[moduleToInit.interface] = [moduleToInit];
+                }
 
-            // if there is an disuware function in the module, we call it
-            if (typeof moduleNodeModule.exports.__disuwareInit === 'function') {
-                debug(`Module with interface ${moduleToInit.interface}@${moduleToInit.version} has an __disuwareInit method, so call it`);
+                // if there is an disuware function in the module, we call it
+                if (typeof moduleNodeModule.exports.__disuwareInit === 'function') {
+                    debug(`Module with interface ${moduleToInit.interface}@${moduleToInit.version} has an __disuwareInit method, so call it`);
 
-                // and then call __disuwareInit
-                return moduleNodeModule.exports.__disuwareInit();
-            }
+                    // and then call __disuwareInit
+                    return moduleNodeModule.exports.__disuwareInit(completionPromise);
+                }
 
-            return null;
-        });
-    }
+                return null;
+            });
+        }
 
-    // finally we return the promise pointer, because it'll tell when the application is ready
-    return promisePointer
-        .then(environment.emitApplicationStartUpCompleteEvent);
+        // and after all modules got executed, apply the resolve or reject
+        promisePointer
+            .then(() => aResolve())
+            .catch(() => aReject());
+    });
+
+    // and return it, so everything
+    return completionPromise;
 }
 
 module.exports = {
