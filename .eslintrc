@@ -7,6 +7,7 @@
   "extends": ["eslint:recommended", "google"],
   "rules": {
     "max-len": "off",
-    "brace-style": ["error", "stroustrup"]
+    "brace-style": ["error", "stroustrup"],
+    "indent": ["error", 4]
   }
 }
