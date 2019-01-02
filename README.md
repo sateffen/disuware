@@ -19,6 +19,18 @@ subcommands are available:
 
 **Example**: disuware run myconfig.json
 
+### list <configFile>
+
+**Description**: Loads given config file and lists all corresponding modules. The list can
+be costumized by options.
+
+**Example**: disuware list myconfig.json
+
+**Option: -l, --linked**: Attempts to link the modules. This might fail, if not all necessary
+modules exist.
+
+**Option: -d, --dependencies**: Prints the dependencies of the modules as well.
+
 ## What does it do (short story)
 
 In short, disuware is a CLI tool for starting nodejs applications, which are built
