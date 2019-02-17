@@ -17,7 +17,7 @@
     "jest": "~24.1.0"
   },
   "scripts": {
-    "lint": "eslint -c .eslintrc src",
+    "lint": "eslint -c .eslintrc src/ test/",
     "test": "jest --config=jest.json"
   },
   "engines": {
