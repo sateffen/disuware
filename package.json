@@ -20,6 +20,9 @@
     "lint": "eslint -c .eslintrc src",
     "test": "jest --config=jest.json"
   },
+  "engines": {
+    "node": ">=8.0.0"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/sateffen/disuware.git"
