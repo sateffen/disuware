@@ -1,6 +1,6 @@
 {
   "name": "disuware",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Dependency injecting start up 'ware",
   "bin": "./src/bin/disuware.js",
   "main": "./src/lib.js",
