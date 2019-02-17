@@ -5,3 +5,4 @@ testapp
 !.eslintrc
 !.gitignore
 !.npmignore
+!.travis.yml

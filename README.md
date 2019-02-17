@@ -1,7 +1,5 @@
 # disuware
 
-[![Codeship Status for sateffen/disuware](https://app.codeship.com/projects/aa841420-e1da-0135-85bf-62c27b79889e/status?branch=master)](https://app.codeship.com/projects/266782)
-
 Application initialization like a boss!
 
 ## Install it
