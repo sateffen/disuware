@@ -30,6 +30,8 @@ function execute() {
 
             debug(`Finished starting ${forkCount} workers`);
 
+            // here we reject with null to prevent further initialization
+            // eslint-disable-next-line prefer-promise-reject-errors
             return Promise.reject(null);
         }
     }

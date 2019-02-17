@@ -137,7 +137,7 @@ function execute(aDisuwareModuleList) {
         // and after all modules got executed, apply the resolve or reject
         promisePointer
             .then(() => aResolve())
-            .catch(() => aReject());
+            .catch((e) => aReject(e));
     });
 
     // and return it, so everything
