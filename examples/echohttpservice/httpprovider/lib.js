@@ -1,22 +1,14 @@
 const polka = require('polka');
 
-const bodyParser = require('body-parser');
-const helmet = require('helmet');
-
 const httpConfigSchema = require('./configschema.json');
 const Ajv = require('ajv');
-const ajv = new Ajv();
 
-const configProvder = require('disuware!configprovider');
+const configProvider = require('disuware!configprovider');
 
 const httpServerList = [];
 const webSocketServerList = [];
 
 const router = polka();
-
-router.use(helmet());
-router.use(bodyParser.json());
-router.use(bodyParser.text());
 
 /**
  * Registers given handler as websocket handler
@@ -34,13 +26,12 @@ function registerForWebSockets(aHandler) {
 }
 
 /**
- * A helper function, that registers route and handler to given registerfunction
- * @param {function} aRegisterFunction The function to register the given handler to
- * @param {string} aRoute The route to use for register
- * @param {function} aHandler The handler to register
+ * Sets given property to given value
+ * @param {string} aPropertyName The property to set
+ * @param {any} aValue The value to set
  */
-function registerMethodHandler(aRegisterFunction, aRoute, aHandler) {
-    aRegisterFunction(aRoute, aHandler);
+function setPropertyOfRouter(aPropertyName, aValue) {
+    router[aPropertyName] = aValue;
 }
 
 /**
@@ -50,7 +41,8 @@ function registerMethodHandler(aRegisterFunction, aRoute, aHandler) {
  * @private
  */
 function __disuwareInit(aInitCompletedPromise) {
-    const config = configProvder.getKey('httpserver');
+    const config = configProvider.getKey('polkahttpprovider');
+    const ajv = new Ajv();
     const valid = ajv.validate(httpConfigSchema, config);
 
     if (!valid) {
@@ -105,11 +97,18 @@ function __disuwareInit(aInitCompletedPromise) {
 
 module.exports = {
     __disuwareInit,
+
     onWebSocket: registerForWebSockets,
+
     addMiddleware: router.use.bind(router),
-    onOptions: registerMethodHandler.bind(null, router.options.bind(router)),
-    onGet: registerMethodHandler.bind(null, router.get.bind(router)),
-    onPost: registerMethodHandler.bind(null, router.post.bind(router)),
-    onPut: registerMethodHandler.bind(null, router.put.bind(router)),
-    onDelete: registerMethodHandler.bind(null, router.delete.bind(router)),
+    onGet: router.get.bind(router),
+    onPost: router.post.bind(router),
+    onPut: router.put.bind(router),
+    onDelete: router.delete.bind(router),
+    onPatch: router.patch.bind(router),
+    onOptions: router.options.bind(router),
+    onHead: router.head.bind(router),
+
+    onUnknownRoute: setPropertyOfRouter.bind(router, 'onNoMatch'),
+    onHttpError: setPropertyOfRouter.bind(router, 'onError'),
 };

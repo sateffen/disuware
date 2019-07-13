@@ -21,16 +21,6 @@ following endpoints:
 
 **Response-Body**: The same content as the request-body.
 
-#### POST /graphql
-
-**Request-Header**: You have to provide the `content-type` header as `application/json`.
-
-**Request-Body**: A valid graphql query, that querys the echo-method. Example: `{"query":"query echo {echo(toEcho: \"test\"){value}}"}`
-(yes, with backslashes)
-
-**Response-Body**: An echo response from the graphql graph. Looks like `{"data":{"echo":{"value":"test"}}}` with above
-example.
-
 #### WebSocket /echo
 
 You can connect with a websocket to the */echo* endpoint. It'll echo back all data you send to it.

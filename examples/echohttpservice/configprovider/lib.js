@@ -3,7 +3,7 @@
  * @type {Object}
  */
 const config = {
-    httpserver: {
+    polkahttpprovider: {
         http: {
             host: 'localhost',
             port: 8888,

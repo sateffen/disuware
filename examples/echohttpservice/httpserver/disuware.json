@@ -1,7 +1,0 @@
-{
-    "interface": "httpserver",
-    "version": "1.0.0",
-    "requires": {
-        "configprovider": "~1.0.0"
-    }
-}
