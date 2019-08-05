@@ -1,18 +1,18 @@
 {
   "name": "disuware",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Dependency injecting start up 'ware",
   "bin": "./src/bin/disuware.js",
   "main": "./src/lib.js",
   "license": "MIT",
   "dependencies": {
-    "ajv": "~6.10.1",
+    "ajv": "~6.10.2",
     "commander": "~2.20.0",
     "debug": "~4.1.1",
-    "semver": "~6.2.0"
+    "semver": "~6.3.0"
   },
   "devDependencies": {
-    "eslint": "~6.0.1",
+    "eslint": "~6.1.0",
     "eslint-config-google": "~0.13.0",
     "jest": "~24.8.0"
   },
