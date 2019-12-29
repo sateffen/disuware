@@ -9,7 +9,7 @@
     "ajv": "~6.10.2",
     "commander": "~4.0.1",
     "debug": "~4.1.1",
-    "semver": "~7.1.1"
+    "semver": "~6.3.0"
   },
   "devDependencies": {
     "eslint": "~6.8.0",
