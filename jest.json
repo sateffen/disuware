@@ -1,6 +1,5 @@
 {
   "automock": false,
-  "browser": false,
   "bail": true,
   "roots": ["test"],
   "testEnvironment": "node",
